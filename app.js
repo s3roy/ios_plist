@@ -3,7 +3,7 @@ const multer = require('multer');
 const plist = require('plist');
 const fs = require('fs');
 const path = require('path');
-const cors = require('cors'); // Import the CORS middleware
+const cors = require('cors');
 const db = require('./models');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 
@@ -12,7 +12,7 @@ const upload = multer({ dest: 'uploads/' });
 
 db.sequelize.sync({ force: false });
 
-app.use(cors()); // Enable CORS for all routes
+app.use(cors());
 app.use(express.json());
 
 // Base route to check server status
@@ -57,7 +57,15 @@ router.post('/upload', upload.single('file'), async (req, res) => {
 
     await csvWriter.writeRecords(records);
 
-    res.status(200).download('uploads/uploaded_data.csv', 'uploaded_data.csv');
+    // Read the file and send it as a response
+    const csvContent = fs.readFileSync('uploads/uploaded_data.csv');
+
+    res.status(200).json({
+        message: 'File processed and data saved.',
+        filename: file.originalname,
+        records,
+        file: csvContent.toString()
+    });
 });
 
 router.post('/check', upload.single('file'), async (req, res) => {
@@ -108,10 +116,14 @@ router.post('/check', upload.single('file'), async (req, res) => {
 
     await csvWriter.writeRecords(matchedRecords);
 
+    // Read the file and send it as a response
+    const csvContent = fs.readFileSync('uploads/matched_data.csv');
+
     res.status(200).json({
         message: `Found ${existingEntries.length} existing key-hash pairs in the database.`,
+        filename: file.originalname,
         matchedCount: existingEntries.length,
-        csvFilePath: 'uploads/matched_data.csv'
+        file: csvContent.toString()
     });
 });
 
