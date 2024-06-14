@@ -10,7 +10,7 @@ const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const app = express();
 const upload = multer({ dest: 'uploads/' });
 
-db.sequelize.sync({ force: false });
+db.sequelize.sync({ force: true });
 
 app.use(cors());
 app.use(express.json());
