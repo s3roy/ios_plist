@@ -3,6 +3,7 @@ const multer = require('multer');
 const plist = require('plist');
 const fs = require('fs');
 const path = require('path');
+const cors = require('cors'); // Import the CORS middleware
 const db = require('./models');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 
@@ -11,6 +12,7 @@ const upload = multer({ dest: 'uploads/' });
 
 db.sequelize.sync({ force: false });
 
+app.use(cors()); // Enable CORS for all routes
 app.use(express.json());
 
 // Base route to check server status
