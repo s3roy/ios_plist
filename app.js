@@ -9,11 +9,19 @@ const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const app = express();
 const upload = multer({ dest: 'uploads/' });
 
-db.sequelize.sync({ force: true });  // Set to `force: true` for initial sync, then remove or set to `false`
+db.sequelize.sync({ force: false });
 
 app.use(express.json());
 
-app.post('/upload', upload.single('file'), async (req, res) => {
+// Base route to check server status
+app.get('/', (req, res) => {
+    res.send('Server is running');
+});
+
+// Use `/app` as the base route for all endpoints
+const router = express.Router();
+
+router.post('/upload', upload.single('file'), async (req, res) => {
     const appName = req.body.appName;
     const file = req.file;
 
@@ -50,7 +58,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     res.status(200).download('uploads/uploaded_data.csv', 'uploaded_data.csv');
 });
 
-app.post('/check', upload.single('file'), async (req, res) => {
+router.post('/check', upload.single('file'), async (req, res) => {
     const appName = req.body.appName;
     const file = req.file;
 
@@ -105,7 +113,10 @@ app.post('/check', upload.single('file'), async (req, res) => {
     });
 });
 
-const PORT = process.env.PORT || 3000;
+// Use the router for all routes starting with `/app`
+app.use('/app', router);
+
+const PORT = process.env.PORT || 2600;  // Ensure the port is set to 2600
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
