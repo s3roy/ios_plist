@@ -12,6 +12,14 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.STRING,  // Changed to STRING to store Base64 encoded hash
             allowNull: false,
         },
+    }, {
+        indexes: [
+            {
+                unique: true,
+                fields: ['key', 'hash'],
+            }
+        ]
     });
+
     return KeyHash;
 };

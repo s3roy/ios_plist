@@ -40,8 +40,16 @@ router.post('/upload', upload.single('file'), async (req, res) => {
 
     for (const key in files) {
         const hash = files[key];
-        await db.KeyHash.create({ appName, key, hash: hash.toString('base64') });
-        records.push({ appName, key, hash: hash.toString('base64') });
+        try {
+            await db.KeyHash.create({ appName, key, hash: hash.toString('base64') });
+            records.push({ appName, key, hash: hash.toString('base64') });
+        } catch (error) {
+            if (error.name === 'SequelizeUniqueConstraintError') {
+                console.log(`Duplicate entry for ${key}, ${hash.toString('base64')}`);
+            } else {
+                throw error;
+            }
+        }
     }
 
     fs.unlinkSync(filePath); // Clean up the uploaded file
@@ -88,10 +96,6 @@ router.post('/check', upload.single('file'), async (req, res) => {
         key: keys,
         hash: hashes
     };
-
-    if (appName) {
-        whereClause.appName = appName;
-    }
 
     const existingEntries = await db.KeyHash.findAll({
         where: whereClause
